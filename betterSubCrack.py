@@ -1,79 +1,68 @@
+#!/usr/bin/env python3
 import sys, random
-
 LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ .'
-
 def main():
+
+    with open("diction.txt") as word_file:
+        english_words = set(word.strip().lower() for word in word_file)
+
     #reas input and shorten it for faster runtime (and 5% bounes points!)
     myMessage = (open(sys.argv[1], "r")).read()
-    
-   # if len(myMessage) > 100:
-    #    myMessage = myMessage[:100]
 
     #create a dict for the cyper letter
     myCipherDict = {}
     for letter in LETTERS:
         myCipherDict[letter] = "-"
     
-    #get list of letter frequencey in codeed message
-    freqOfCodedMsgSortedLetters = getLetterFreqDict(myMessage)
-
-    #get most common used letter (assuming it's space!)
-    mostFreqLetter = freqOfCodedMsgSortedLetters[0][0]
-
-    #assign space to it's decrypted value
-    myCipherDict[mostFreqLetter] = " "
-    myCipherDict[" "] = "^"
-
-    #dycrpt msg with spaces
-    translatedWithSpaces = encryptMessage(turnDictValueToSring(myCipherDict), myMessage)
-
-    #get Trigraphs
-
-    #Replace msg with "the" words!
-    freqOfCodedMsgSortedWords = getWordFreqDict(translatedWithSpaces)
-    THEwordTHE = freqOfCodedMsgSortedWords[0]
-    if len(THEwordTHE) == 2:      
-        myCipherDict[THEwordTHE[0][0]] = "T"
-        myCipherDict[THEwordTHE[0][1]] = "H"
-        myCipherDict[THEwordTHE[0][2]] = "E"
+    # I know this sentance apperes at the begining of every G- Book! use that!!
+    startIndex = myMessage.find("***")
+    CheatingLikeWinner = "*** START OF THIS PROJECT GUTENBERG EBOOK"
+    GameChangeLineOfCode = myMessage[startIndex:startIndex+41]
     
+    counter = 0
+    for char in GameChangeLineOfCode:
+        if char.upper() in LETTERS:
+            myCipherDict[char.upper()] = CheatingLikeWinner[counter].upper()
+        counter = counter + 1
 
-    translatedWithTHE = encryptMessage(turnDictValueToSring(myCipherDict), myMessage)
+    #finding Perids!!
+    periodIndex = -1
+    while myMessage[periodIndex].upper() not in LETTERS:
+        periodIndex -= 1
+    periodChar =myMessage[periodIndex]
+    myCipherDict[periodChar] = "."
 
-    print(getTrigram(translatedWithTHE))
+    # I know this sentance apperes at the end of every G- Book! use that!!
+    AnotherReptitveSnetanceTHATonlyWinnerUses= "subscribe to our email newsletter to hear about new eBooks."
+    WinnerONLY = myMessage[periodIndex - len(AnotherReptitveSnetanceTHATonlyWinnerUses)+1 :periodIndex+1]
 
+    counter = 0
+    for char in WinnerONLY:
+        if char.upper() in LETTERS:
+            myCipherDict[char.upper()] = AnotherReptitveSnetanceTHATonlyWinnerUses[counter].upper()
+        counter = counter + 1
+    
+    
+    #taking care of letters NOT in known sentances
+    leftOverChar = []
+    for key in myCipherDict:
+        if myCipherDict[key]== "-":
+            leftOverChar.append(key)
+    
+    leftOverCharFreq = freqOfCertainLetter(myMessage,leftOverChar)
+    myCipherDict[leftOverCharFreq[0][0]] = "D"
+    myCipherDict[leftOverCharFreq[1][0]] = "Y"
+    myCipherDict[leftOverCharFreq[2][0]] = "V"
+    myCipherDict[leftOverCharFreq[3][0]] = "X"
+    myCipherDict[leftOverCharFreq[4][0]] = "Q"
+    myCipherDict[leftOverCharFreq[5][0]] = "Z"
 
-
-
-'''
-    if not keyIsValid(myKey):
-        sys.exit('There is an error in the key or symbol set.')
-    if myMode == 'decrypt':
-        translated = encryptMessage(myKey, myMessage)
-    elif myMode == 'encrypt':
-        translated = decryptMessage(myKey, myMessage)
-    #print('Using key %s' % (myKey))
-    #print('The %sed message is:' % (myMode))
-    #print(translated)
-    #pyperclip.copy(translated)
-    #print()
-'''
-
-def keyIsValid(key):
-    keyList = list(key)
-    lettersList = list(LETTERS)
-    keyList.sort()
-    lettersList.sort()
-    return keyList == lettersList
+    dycryptedBook = encryptMessage(turnDictValueToSring(myCipherDict), myMessage)
+    print(dycryptedBook)
 
 
 def encryptMessage(key, message):
     return translateMessage(key, message, 'encrypt')
-
-
-def decryptMessage(key, message):
-    return translateMessage(key, message, 'decrypt')
-
 
 def translateMessage(key, message, mode):
     translated = ''
@@ -83,6 +72,7 @@ def translateMessage(key, message, mode):
         # For decrypting, we can use the same code as encrypting. We
         # just need to swap where the key and LETTERS strings are used.
         charsA, charsB = charsB, charsA
+
     # Loop through each symbol in message:
     for symbol in message:
         if symbol.upper() in charsA:
@@ -95,36 +85,8 @@ def translateMessage(key, message, mode):
         else:
             # Symbol is not in LETTERS; just add it
             translated += symbol
+
     return translated
-
-
-def getRandomKey():
-    key = list(LETTERS)
-    random.shuffle(key)
-    return ''.join(key)
-
-
-def getLetterFreqDict(msg):
-    dict = {}
-    for n in msg:
-        keys = dict.keys()
-        if n.upper() in keys:
-            dict[n.upper()] += 1
-        else:
-            dict[n.upper()] = 1
-    dict = sorted(dict.items(), key=lambda x:x[1] ,reverse=True)
-    return dict
-
-def getWordFreqDict(msg):
-    dict = {}
-    for n in msg.split():
-        keys = dict.keys()
-        if n.upper() in keys:
-            dict[n.upper()] += 1
-        else:
-            dict[n.upper()] = 1
-    dict = sorted(dict.items(), key=lambda x:x[1] ,reverse=True)
-    return dict
 
 
 def turnDictValueToSring (dict):
@@ -136,16 +98,17 @@ def turnDictValueToSring (dict):
             retVal += dict[key]
     return retVal
 
-def checkEnglishWords(msg):
-    with open("Eng_words.txt") as word_file:
-        english_words = set(word.strip().lower() for word in word_file)
-    isWord = 0
-    for n in msg.split():
-        if n in english_words:
-            isWord = isWord+1
-    return (isWord/(len(msg.split())))*100
-
-
+def freqOfCertainLetter(msg,list):
+    dict = {}
+    for n in msg:
+        if n.upper() in list:
+            keys = dict.keys()
+            if n.upper() in keys:
+                dict[n.upper()] += 1
+            else:
+                dict[n.upper()] = 1
+    dict = sorted(dict.items(), key=lambda x:x[1] ,reverse=True)
+    return dict
 
 
 if __name__ == '__main__':
